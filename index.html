@@ -1,43 +1,41 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/fanza-portfolio/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+import React from 'react';
+import { Helmet } from 'react-helmet';
 
-    <!-- Primary Meta Tags -->
-    <title>18+ Doujin Portfolio — Korokke</title>
-    <meta name="title" content="18+ Doujin Portfolio — Korokke" />
-    <meta name="description" content="FANZA同人作品ポートフォリオ – 18+ Doujin Portfolio — Korokke" />
+type SEOProps = {
+  title: string;
+  description: string;
+  url?: string;
+  image?: string;
+};
 
-    <!-- Open Graph / Facebook -->
+export const SEO: React.FC<SEOProps> = ({ title, description, url, image }) => (
+  <Helmet>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    {/* Open Graph */}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {url && <meta property="og:url" content={url} />}
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://satorukomaba.github.io/fanza-portfolio/" />
-    <meta property="og:title" content="18+ Doujin Portfolio — Korokke" />
-    <meta property="og:description" content="FANZA同人作品ポートフォリオ – 18+ Doujin Portfolio — Korokke" />
-    <meta property="og:image" content="https://satorukomaba.github.io/fanza-portfolio/ogp.png" />
+    {image && <meta property="og:image" content={image} />}
 
-    <!-- Twitter -->
+    {/* Twitter Card */}
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://satorukomaba.github.io/fanza-portfolio/" />
-    <meta name="twitter:title" content="18+ Doujin Portfolio — Korokke" />
-    <meta name="twitter:description" content="FANZA同人作品ポートフォリオ – 18+ Doujin Portfolio — Korokke" />
-    <meta name="twitter:image" content="https://satorukomaba.github.io/fanza-portfolio/ogp.png" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={image} />}
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://satorukomaba.github.io/fanza-portfolio/" />
-
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-    </style>
-    <script type="module" crossorigin src="/fanza-portfolio/assets/index-B4WSDqrT.js"></script>
-    <link rel="stylesheet" crossorigin href="/fanza-portfolio/assets/index-bKkWGZjX.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
+    $1
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "18+ Doujin Portfolio — Korokke",
+      "description": "FANZA同人作品ポートフォリオ – 18+ Doujin Portfolio — Korokke",
+      "url": "https://satorukomaba.github.io/fanza-portfolio/"
+    }
+    </script>
+  </Helmet>
+);
