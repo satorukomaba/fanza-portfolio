@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://satorukomaba.github.io/fanza-portfolio/sitemap.xml 
