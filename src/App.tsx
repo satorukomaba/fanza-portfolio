@@ -10,11 +10,14 @@ import {
   Link,
   Button,
 } from '@chakra-ui/react';
+import { SEO } from './components/SEO';
 import theme from './theme';
 import Hero from './components/Hero';
 import works from './data/works.json';
 
 export default function App() {
+  const siteUrl = 'https://satorukomaba.github.io/fanza-portfolio/';
+
   // 固定背景色: ライトピンク
   const bg = 'pink.200';
 
@@ -29,9 +32,17 @@ export default function App() {
 
   return (
     <ChakraProvider theme={theme}>
+      {/* SEO メタタグ */}
+      <SEO
+        title="18+ Doujin Portfolio — Korokke"
+        description="FANZA同人作品ポートフォリオ – 18+ Doujin Portfolio — Korokke"
+        url={siteUrl}
+        image={`${siteUrl}ogp.png`}
+      />
+
       {/* Hero セクション */}
       <Box minH="100vh" display="flex" flexDirection="column" bg={bg}>
-        <Hero onMenuClick={() => {}} />
+        <Hero />
 
         {/* 作品リスト */}
         <Container flex="1" maxW="container.lg" py={12}>

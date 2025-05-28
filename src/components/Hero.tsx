@@ -2,13 +2,11 @@ import React from 'react';
 import { Heading, Link } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
-type HeroProps = {
-  onMenuClick: () => void;
-};
+type HeroProps = {};
 
 const MotionHeading = motion(Heading);
 
-export default function Hero({ onMenuClick }: HeroProps) {
+export default function Hero(_: HeroProps) {
   const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -18,7 +16,10 @@ export default function Hero({ onMenuClick }: HeroProps) {
     <div
       id="top"
       className="relative h-screen overflow-hidden pt-16 bg-cover bg-center"
-      style={{ backgroundImage: "url('/cg_sylphia_h1_kissDeep.png')" }}
+      // import.meta.env.BASE_URL が "/fanza-portfolio/" を指すようになる
+      style={{
+        backgroundImage: `url(${import.meta.env.BASE_URL}cg_sylphia_h1_kissDeep.png)`,
+      }}
     >
       {/* ヘッダー：右上に固定（リンクのみ） */}
       <header className="fixed top-0 right-0 p-4 z-50">
