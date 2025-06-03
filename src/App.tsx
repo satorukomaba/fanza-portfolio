@@ -44,6 +44,13 @@ export default function App() {
       <Box minH="100vh" display="flex" flexDirection="column" bg={bg}>
         <Hero />
 
+        {/* 作品一覧へのリンク */}
+        <Box textAlign="center" mt={8} id="works">
+          <Link href="#works" fontWeight="bold">
+            同人ポートフォリオ作品一覧へ
+          </Link>
+        </Box>
+
         {/* 作品リスト */}
         <Container flex="1" maxW="container.lg" py={12}>
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
@@ -61,12 +68,13 @@ export default function App() {
                 >
                   <Image
                     src={w.imageUrl}
-                    alt={w.title}
+                    loading="lazy"
                     objectFit="cover"
                     w="100%"
                     h="auto"
                     transition="transform 0.3s ease"
                     _hover={{ transform: 'rotate(1deg)' }}
+                    alt={`${w.title} 同人デジタルノベルゲーム | FANZA ポートフォリオ`}
                   />
                   <Box p={4}>
                     <Heading size="md" color="gray.800">{w.title}</Heading>

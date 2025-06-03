@@ -58,7 +58,9 @@ export default function Hero(_: HeroProps) {
           }}
           textAlign="center"
         >
-          18+ Doujin Portfolio — Korokke
+          18+ 同人ポートフォリオ — Korokke
+          <br />
+          <small>Digital Doujin Portfolio</small>
         </MotionHeading>
       </div>
     </div>
