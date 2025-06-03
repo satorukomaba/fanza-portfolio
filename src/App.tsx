@@ -54,38 +54,73 @@ export default function App() {
         {/* 作品リスト */}
         <Container flex="1" maxW="container.lg" py={12}>
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-            {displayed.map(w => (
-              <Link key={w.id} href={w.fanzaUrl} isExternal _hover={{ textDecoration: 'none' }}>
-                <Box
-                  bg="white"
-                  borderWidth="1px"
-                  rounded="lg"
-                  overflow="hidden"
-                  shadow="md"
-                  transition="transform 0.3s ease, box-shadow 0.3s ease"
-                  transformOrigin="center"
-                  _hover={{ transform: 'rotate(2deg)', boxShadow: 'xl', outline: '2px solid rgba(237,188,232,0.8)' }}
+            {displayed.map(w => {
+              // アフィリエイトURLがある場合は優先、なければfanzaUrlを使用
+              const linkUrl = w.affiliateUrl || w.fanzaUrl;
+              const isAffiliate = !!w.affiliateUrl;
+              
+              return (
+                <Link 
+                  key={w.id} 
+                  href={linkUrl} 
+                  isExternal 
+                  _hover={{ textDecoration: 'none' }}
+                  rel={isAffiliate ? "sponsored" : "noopener noreferrer"}
                 >
-                  <Image
-                    src={w.imageUrl}
-                    loading="lazy"
-                    objectFit="cover"
-                    w="100%"
-                    h="auto"
-                    transition="transform 0.3s ease"
-                    _hover={{ transform: 'rotate(1deg)' }}
-                    alt={`${w.title} 同人デジタルノベルゲーム | FANZA ポートフォリオ`}
-                  />
-                  <Box p={4}>
-                    <Heading size="md" color="gray.800">{w.title}</Heading>
-                    <Text mt={2} color="gray.600">{w.description}</Text>
-                    <Button as="a" href={w.fanzaUrl} target="_blank" mt={4} colorScheme="teal" size="sm">
-                      詳細を見る
-                    </Button>
+                  <Box
+                    bg="white"
+                    borderWidth="1px"
+                    rounded="lg"
+                    overflow="hidden"
+                    shadow="md"
+                    transition="transform 0.3s ease, box-shadow 0.3s ease"
+                    transformOrigin="center"
+                    _hover={{ transform: 'rotate(2deg)', boxShadow: 'xl', outline: '2px solid rgba(237,188,232,0.8)' }}
+                    position="relative"
+                  >
+                    <Image
+                      src={w.imageUrl}
+                      loading="lazy"
+                      objectFit="cover"
+                      w="100%"
+                      h="auto"
+                      transition="transform 0.3s ease"
+                      _hover={{ transform: 'rotate(1deg)' }}
+                      alt={`${w.title} 同人デジタルノベルゲーム | FANZA ポートフォリオ`}
+                    />
+                    {/* アフィリエイトバッジ */}
+                    {isAffiliate && (
+                      <Box
+                        position="absolute"
+                        top={2}
+                        right={2}
+                        bg="blue.500"
+                        color="white"
+                        px={2}
+                        py={1}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="bold"
+                      >
+                        FANZA
+                      </Box>
+                    )}
+                    <Box p={4}>
+                      <Heading size="md" color="gray.800">{w.title}</Heading>
+                      <Text mt={2} color="gray.600">{w.description}</Text>
+                      <Button 
+                        as="span" 
+                        mt={4} 
+                        colorScheme={isAffiliate ? "blue" : "teal"} 
+                        size="sm"
+                      >
+                        詳細を見る
+                      </Button>
+                    </Box>
                   </Box>
-                </Box>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </SimpleGrid>
           {count < works.length && (
             <Box textAlign="center" mt={8}>
