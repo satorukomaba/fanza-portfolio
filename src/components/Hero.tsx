@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heading, Link } from '@chakra-ui/react';
+import { Heading, Link, Button, Box, Text } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
 type HeroProps = {};
@@ -16,9 +16,8 @@ export default function Hero(_: HeroProps) {
     <div
       id="top"
       className="relative h-screen overflow-hidden pt-16 bg-cover bg-center"
-      // import.meta.env.BASE_URL が "/fanza-portfolio/" を指すようになる
       style={{
-        backgroundImage: `url(${import.meta.env.BASE_URL}cg_sylphia_h1_kissDeep.png)`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url(${import.meta.env.BASE_URL}cg_sylphia_h1_kissDeep.png)`,
       }}
     >
       {/* ヘッダー：右上に固定（リンクのみ） */}
@@ -45,10 +44,10 @@ export default function Hero(_: HeroProps) {
       <div className="relative z-10 flex flex-col items-center justify-center h-full">
         <MotionHeading
           as="h1"
-          size="3xl"
+          size="4xl"
           fontWeight="extrabold"
           color="white"
-          dropShadow="lg"
+          textShadow="0 6px 24px rgba(0,0,0,0.35)"
           animate={{ y: [0, -20, 0] }}
           transition={{
             duration: 0.8,
@@ -60,8 +59,17 @@ export default function Hero(_: HeroProps) {
         >
           18+ 同人ポートフォリオ — Korokke
           <br />
-          <small>Digital Doujin Portfolio</small>
+          <Text as="span" fontSize="lg">Digital Doujin Portfolio</Text>
         </MotionHeading>
+
+        <Box mt={8} display="flex" gap={4}>
+          <Button as="a" href="#works" variant="pill" size="lg">
+            作品一覧を見る
+          </Button>
+          <Button as="a" href="https://satorukomaba.github.io/fanza-portfolio/" target="_blank" colorScheme="whiteAlpha" size="lg">
+            Webサイトへ
+          </Button>
+        </Box>
       </div>
     </div>
   );

@@ -18,10 +18,10 @@ type Props = {
 
 export default function FanzaModal({ isOpen, onClose, fanzaUrl, workTitle }: Props) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{workTitle}</ModalHeader>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+      <ModalOverlay backdropFilter="blur(6px)" backgroundColor="blackAlpha.300" />
+      <ModalContent borderRadius="2xl" boxShadow="2xl">
+        <ModalHeader bgGradient="linear(to-r, brand.400, accent.400)" color="white" borderTopRadius="2xl">{workTitle}</ModalHeader>
         <ModalCloseButton />
         <ModalBody p={0}>
           {fanzaUrl ? (

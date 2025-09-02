@@ -18,8 +18,8 @@ import works from './data/works.json';
 export default function App() {
   const siteUrl = 'https://satorukomaba.github.io/fanza-portfolio/';
 
-  // 固定背景色: ライトピンク
-  const bg = 'pink.200';
+  // 背景はCSSのポップ装飾に委譲
+  const bg = 'transparent';
 
   // 初期表示件数と追加件数
   const initialCount = 9;

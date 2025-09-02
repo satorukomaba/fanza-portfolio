@@ -7,7 +7,7 @@ type HamburgerMenuProps = {
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="p-2 bg-white/30 rounded-md backdrop-blur-sm" // Position classes removed, keep styling
+    className="p-2 bg-white/40 rounded-full backdrop-blur-md shadow-lg hover:scale-105 transition-transform"
     aria-label="メニューを開く"
   >
     {/* シンプルなハンバーガーアイコンSVG */}

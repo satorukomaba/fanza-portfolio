@@ -5,13 +5,13 @@
 /* 既存のスタイルがあればここに追加 */
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'M PLUS Rounded 1c', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: #1f2937;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -42,6 +42,7 @@ h1 {
   padding: 0;
   text-align: left;
   min-height: 100vh;
+  position: relative;
 }
 
 .logo {
@@ -95,4 +96,17 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* 背景のポップなグラデーションとブラーのデコレーション */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 60vh;
+  background: radial-gradient(60% 60% at 20% 20%, rgba(244,63,94,0.35), transparent 60%),
+              radial-gradient(50% 50% at 80% 30%, rgba(6,182,212,0.25), transparent 60%),
+              radial-gradient(40% 40% at 50% 80%, rgba(250,204,21,0.25), transparent 60%);
+  filter: blur(60px) saturate(1.1);
+  z-index: -1;
 }
