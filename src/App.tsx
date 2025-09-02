@@ -24,11 +24,15 @@ export default function App() {
   // 初期表示件数と追加件数
   const initialCount = 9;
   const perPage = 9;
+  // 新着順（ID降順）にソート
+  const sortedWorks = React.useMemo(() => {
+    return [...works].sort((a: any, b: any) => (b.id ?? 0) - (a.id ?? 0));
+  }, []);
   const [count, setCount] = React.useState(initialCount);
   const handleShowMore = () => {
-    setCount(prev => Math.min(prev + perPage, works.length));
+    setCount(prev => Math.min(prev + perPage, sortedWorks.length));
   };
-  const displayed = works.slice(0, count);
+  const displayed = sortedWorks.slice(0, count);
 
   return (
     <ChakraProvider theme={theme}>
