@@ -49,19 +49,27 @@ async function main() {
   const targets = data.filter(w => typeof w.id === 'number' && w.id >= 13);
   const updates = [];
 
+  // Dry run mode to check encoding
+  const dryRun = process.argv.includes('--dry-run');
+
   for (const w of targets) {
     try {
       const title = await fetchTitle(w.fanzaUrl);
       if (title && !title.startsWith('Welcome to Japan')) {
         updates.push({ id: w.id, before: w.title, after: title });
-        w.title = title;
+        if (!dryRun) w.title = title;
       }
     } catch (err) {
       // ignore fetch errors; keep existing title
     }
   }
 
-  await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+  if (!dryRun) {
+      await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+  } else {
+      console.log('--- DRY RUN: No changes saved ---');
+  }
+  
   for (const u of updates) {
     console.log(`${u.id}: ${u.before} -> ${u.after}`);
   }

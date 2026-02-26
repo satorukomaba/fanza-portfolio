@@ -1,0 +1,41 @@
+name: Update Works
+
+on:
+  schedule:
+    # 毎日 JST 0:00 (UTC 15:00) に実行
+    - cron: '0 15 * * *'
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch new works
+        run: npm run fetch-works
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code || echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and Push if changes
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add src/data/works.json
+          git commit -m "chore(data): auto-update portfolio works [skip ci]"
+          git push
