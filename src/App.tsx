@@ -145,7 +145,7 @@ const WorkCard = ({ work, onClick }: { work: Work; onClick: () => void }) => {
 };
 
 export default function App() {
-  const siteUrl = 'https://satorukomaba.github.io/fanza-portfolio/';
+  const siteUrl = 'https://koroke-works.pages.dev/';
   const works = worksData as Work[];
 
   const { isOpen, onOpen, onClose } = useDisclosure();

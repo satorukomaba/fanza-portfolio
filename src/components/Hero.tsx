@@ -66,7 +66,7 @@ export default function Hero(_: HeroProps) {
           <Button as="a" href="#works" variant="pill" size="lg">
             作品一覧を見る
           </Button>
-          <Button as="a" href="https://satorukomaba.github.io/fanza-portfolio/" target="_blank" colorScheme="whiteAlpha" size="lg">
+          <Button as="a" href="https://koroke-works.pages.dev/" target="_blank" colorScheme="whiteAlpha" size="lg">
             Webサイトへ
           </Button>
         </Box>
