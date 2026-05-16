@@ -24,6 +24,9 @@ import theme from './theme';
 import Hero from './components/Hero';
 import worksData from './data/works.json';
 import FanzaModal from './components/FanzaModal';
+import AgeGate from './components/AgeGate';
+
+const AGE_VERIFIED_KEY = 'age_verified';
 
 // Work型をこのファイル内で定義してインポートエラーを回避
 interface Work {
@@ -148,6 +151,16 @@ export default function App() {
   const siteUrl = 'https://koroke-works.pages.dev/';
   const works = worksData as Work[];
 
+  const [ageVerified, setAgeVerified] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(AGE_VERIFIED_KEY) === 'true';
+  });
+
+  const handleAgeConfirm = () => {
+    window.localStorage.setItem(AGE_VERIFIED_KEY, 'true');
+    setAgeVerified(true);
+  };
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedWork, setSelectedWork] = React.useState<Work | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -214,6 +227,14 @@ export default function App() {
       }))
     };
   }, [displayed]);
+
+  if (!ageVerified) {
+    return (
+      <ChakraProvider theme={theme}>
+        <AgeGate onConfirm={handleAgeConfirm} />
+      </ChakraProvider>
+    );
+  }
 
   return (
     <ChakraProvider theme={theme}>
