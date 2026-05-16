@@ -5,4 +5,6 @@ export interface Work {
   imageUrl: string;
   fanzaUrl: string;
   affiliateUrl?: string;
+  category?: string;
 } 
+ 

@@ -128,6 +128,12 @@ async function main() {
         imageUrl = imageUrl.replace('pl.jpg', 'pr.jpg');
     }
 
+    // Detect category from imageUrl
+    let category = 'その他';
+    if (imageUrl.includes('/game/')) category = 'ゲーム';
+    else if (imageUrl.includes('/cg/')) category = 'CG集';
+    else if (imageUrl.includes('/comic/')) category = 'コミック';
+
     maxId++;
     const newItem = {
       id: maxId,
@@ -135,7 +141,8 @@ async function main() {
       description: "", 
       imageUrl: imageUrl,
       fanzaUrl: url,
-      affiliateUrl: generateAffiliateUrl(url)
+      affiliateUrl: generateAffiliateUrl(url),
+      category: category
     };
     
     newItems.push(newItem);
