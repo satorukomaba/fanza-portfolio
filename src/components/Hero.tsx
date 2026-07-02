@@ -2,11 +2,9 @@ import React from 'react';
 import { Heading, Link, Button, Box, Text } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
-type HeroProps = {};
-
 const MotionHeading = motion(Heading);
 
-export default function Hero(_: HeroProps) {
+export default function Hero() {
   const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });

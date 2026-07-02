@@ -43,7 +43,7 @@ interface Work {
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
 
-const getCategory = (w: any) => {
+const getCategory = (w: Work) => {
   if (w.category) return w.category;
   if (w.imageUrl.includes('/game/')) return 'ゲーム';
   if (w.imageUrl.includes('/cg/')) return 'CG集';
@@ -128,7 +128,7 @@ const WorkCard = ({ work, onClick }: { work: Work; onClick: () => void }) => {
         <Heading size="md" color="gray.800" noOfLines={2} minH="3.6em" lineHeight="shorter">
           {work.title}
         </Heading>
-        <Text mt={2} color="gray.500" fontSize="xs" fontWeight="medium">
+        <Text mt={2} color="gray.500" fontSize="xs" fontWeight="medium" noOfLines={2}>
           {work.description || `${category}作品`}
         </Text>
         <Button 
@@ -159,6 +159,11 @@ export default function App() {
   const handleAgeConfirm = () => {
     window.localStorage.setItem(AGE_VERIFIED_KEY, 'true');
     setAgeVerified(true);
+  };
+
+  const handleAgeDeny = () => {
+    // 18歳未満は外部サイトへ退出させる
+    window.location.href = 'https://www.google.com/';
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -195,10 +200,12 @@ export default function App() {
     return result;
   }, [selectedCategory, searchQuery, works]);
 
-  // 検索やカテゴリ変更時に表示数をリセット
-  React.useEffect(() => {
+  // 検索やカテゴリ変更時に表示数をリセット（レンダー中に状態を調整するパターン）
+  const [prevFilter, setPrevFilter] = React.useState({ selectedCategory, searchQuery });
+  if (prevFilter.selectedCategory !== selectedCategory || prevFilter.searchQuery !== searchQuery) {
+    setPrevFilter({ selectedCategory, searchQuery });
     setCount(initialCount);
-  }, [selectedCategory, searchQuery]);
+  }
 
   const displayed = filteredWorks.slice(0, count);
 
@@ -220,6 +227,7 @@ export default function App() {
         "item": {
           "@type": "CreativeWork",
           "name": w.title,
+          ...(w.description ? { "description": w.description } : {}),
           "image": w.imageUrl,
           "genre": getCategory(w),
           "url": w.affiliateUrl || w.fanzaUrl
@@ -231,7 +239,7 @@ export default function App() {
   if (!ageVerified) {
     return (
       <ChakraProvider theme={theme}>
-        <AgeGate onConfirm={handleAgeConfirm} />
+        <AgeGate onConfirm={handleAgeConfirm} onDeny={handleAgeDeny} />
       </ChakraProvider>
     );
   }
