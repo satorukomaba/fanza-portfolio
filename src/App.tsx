@@ -303,7 +303,7 @@ export default function App() {
         </Container>
 
         {/* 作品リスト */}
-        <Container flex="1" maxW="container.lg" py={12}>
+        <Container id="works" flex="1" maxW="container.lg" py={12}>
           <AnimatePresence mode="wait">
             <MotionSimpleGrid
               key={`${selectedCategory}-${searchQuery}`}

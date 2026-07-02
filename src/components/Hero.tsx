@@ -44,7 +44,8 @@ export default function Hero(_: HeroProps) {
       <div className="relative z-10 flex flex-col items-center justify-center h-full">
         <MotionHeading
           as="h1"
-          size="4xl"
+          size={{ base: '2xl', md: '4xl' }}
+          px={4}
           fontWeight="extrabold"
           color="white"
           textShadow="0 6px 24px rgba(0,0,0,0.35)"
@@ -66,7 +67,14 @@ export default function Hero(_: HeroProps) {
           <Button as="a" href="#works" variant="pill" size="lg">
             作品一覧を見る
           </Button>
-          <Button as="a" href="https://koroke-works.pages.dev/" target="_blank" colorScheme="whiteAlpha" size="lg">
+          <Button
+            as="a"
+            href="https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/exclude_ai=0/id=208444/"
+            target="_blank"
+            rel="noopener noreferrer"
+            colorScheme="whiteAlpha"
+            size="lg"
+          >
             Webサイトへ
           </Button>
         </Box>
