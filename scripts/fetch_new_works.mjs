@@ -81,6 +81,13 @@ async function main() {
 
   console.log(`Found ${foundCids.length} unique CIDs on the page (reversed order for processing).`);
 
+  // CID が 1 件も見つからない場合はリージョンブロック等でページ内容が想定外。
+  // 「新作なし」と区別できないため、黙って成功せずエラーで落とす。
+  if (foundCids.length === 0) {
+    console.error('No CIDs found on the list page. Likely region-blocked (non-JP IP) or page structure changed.');
+    process.exit(1);
+  }
+
   const newItems = [];
 
   for (const cid of foundCids) {
