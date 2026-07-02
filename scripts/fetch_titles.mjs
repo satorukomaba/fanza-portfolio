@@ -59,7 +59,7 @@ async function main() {
         updates.push({ id: w.id, before: w.title, after: title });
         if (!dryRun) w.title = title;
       }
-    } catch (err) {
+    } catch {
       // ignore fetch errors; keep existing title
     }
   }

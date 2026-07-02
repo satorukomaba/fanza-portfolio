@@ -99,7 +99,7 @@ async function main() {
     const itemMatch = html.match(imgRegex);
 
     let title = `New Work ${cid}`;
-    let imageUrl = '';
+    let imageUrl;
     
     if (itemMatch) {
         imageUrl = itemMatch[1];
