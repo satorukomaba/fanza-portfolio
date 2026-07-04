@@ -25,6 +25,9 @@ jobs:
 
       - name: Fetch new works
         run: npm run fetch-works
+        env:
+          DMM_API_ID: ${{ secrets.DMM_API_ID }}
+          DMM_AFFILIATE_ID: ${{ secrets.DMM_AFFILIATE_ID }}
 
       - name: Check for changes
         id: git-check

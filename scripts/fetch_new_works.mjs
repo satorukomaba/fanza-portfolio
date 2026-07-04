@@ -1,47 +1,74 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const TARGET_URL = 'https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/exclude_ai=0/id=208444/';
-const AFFILIATE_ID = 'korokke-001';
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-const COOKIE = 'ckcy=1; age_check_done=1; isAdult=1';
+// DMM アフィリエイト API (公式 Web API) で新作を取得する。
+// 旧実装は FANZA のリストページをスクレイピングしていたが、GitHub Actions の
+// 海外 IP がリージョンブロックされ CID 0 件 →「新作なし」と誤判定していたため
+// API 経由に移行した。
+//
+// 必要な環境変数:
+//   DMM_API_ID       : https://affiliate.dmm.com/api/ で発行する API ID
+//   DMM_AFFILIATE_ID : API 用アフィリエイト ID（末尾 990〜999 のもの）
+const API_ENDPOINT = 'https://api.dmm.com/affiliate/v3/ItemList';
+const MAKER_ID = '208444'; // FANZA 同人サークル ID
+
+const API_ID = process.env.DMM_API_ID;
+const AFFILIATE_ID = process.env.DMM_AFFILIATE_ID;
+
+// 保存する affiliateUrl は既存 58 件と同じ形式で生成する。
+// API リクエスト用の 990 番台 ID とは別に、リンク表示用の ID を使う
+// （API が返す affiliateURL は al.fanza.co.jp / af_id=xxx-990 形式で既存と食い違うため）。
+const LINK_AFFILIATE_ID = process.env.DMM_LINK_AFFILIATE_ID || 'korokke-001';
 
 const PROJECT_ROOT = process.cwd();
 const DATA_PATH = path.join(PROJECT_ROOT, 'src', 'data', 'works.json');
 
-// Helper to decode HTML entities
-function decodeHtmlEntities(str) {
-  if (!str) return str;
-  return str
-    .replaceAll('&amp;', '&')
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>')
-    .replaceAll('&quot;', '"')
-    .replaceAll('&#39;', "'")
-    .replaceAll('&nbsp;', ' ');
-}
-
-// Generate affiliate link
 function generateAffiliateUrl(url) {
   const encodedUrl = encodeURIComponent(url);
-  return `https://al.dmm.co.jp/?lurl=${encodedUrl}&af_id=${AFFILIATE_ID}&ch=search_link&ch_id=package_text`;
+  return `https://al.dmm.co.jp/?lurl=${encodedUrl}&af_id=${LINK_AFFILIATE_ID}&ch=search_link&ch_id=package_text`;
 }
 
-async function fetchPage(url) {
-  console.log(`Fetching: ${url}`);
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': UA,
-      'Cookie': COOKIE,
-    },
+// 画像 URL のパスからカテゴリを推定（既存データと同じ規則）
+function detectCategory(imageUrl) {
+  if (imageUrl.includes('/game/')) return 'ゲーム';
+  if (imageUrl.includes('/cg/')) return 'CG集';
+  if (imageUrl.includes('/comic/')) return 'コミック';
+  return 'その他';
+}
+
+async function fetchItems() {
+  const params = new URLSearchParams({
+    api_id: API_ID,
+    affiliate_id: AFFILIATE_ID,
+    site: 'FANZA',
+    service: 'doujin',
+    floor: 'digital_doujin',
+    article: 'maker',
+    article_id: MAKER_ID,
+    sort: 'date',
+    hits: '100',
+    output: 'json',
   });
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  // DMM/FANZA seems to be using UTF-8 now, or fetch handles it automatically.
-  return res.text();
+
+  const res = await fetch(`${API_ENDPOINT}?${params}`);
+  if (!res.ok) throw new Error(`API request failed: ${res.status}`);
+  const json = await res.json();
+
+  const status = json?.result?.status;
+  if (status !== 200) {
+    throw new Error(`API returned status ${status}: ${JSON.stringify(json?.result?.message ?? json).slice(0, 300)}`);
+  }
+  return json.result.items ?? [];
 }
 
 async function main() {
-  // 1. Read existing data
+  if (!API_ID || !AFFILIATE_ID) {
+    console.error('DMM_API_ID / DMM_AFFILIATE_ID を環境変数に設定してください。');
+    console.error('API ID の発行: https://affiliate.dmm.com/api/');
+    process.exit(1);
+  }
+
+  // 1. 既存データを読み込み
   let works = [];
   try {
     const raw = await fs.readFile(DATA_PATH, 'utf-8');
@@ -50,10 +77,9 @@ async function main() {
     console.warn('Could not read works.json, starting empty.', err);
   }
 
-  // Create a Set of existing CIDs to check for duplicates
   const existingCids = new Set();
   let maxId = 0;
-  works.forEach(w => {
+  works.forEach((w) => {
     if (w.id > maxId) maxId = w.id;
     const match = w.fanzaUrl.match(/cid=([a-z0-9_]+)/);
     if (match) existingCids.add(match[1]);
@@ -61,106 +87,52 @@ async function main() {
 
   console.log(`Loaded ${works.length} existing works. Max ID: ${maxId}`);
 
-  // 2. Fetch the list page
-  const html = await fetchPage(TARGET_URL);
+  // 2. API から作品一覧を取得
+  const items = await fetchItems();
+  console.log(`API returned ${items.length} items.`);
 
-  // 3. Parse items
-  // Strategy: Find all unique CIDs on the page first
-  const cidRegex = /cid=([a-z0-9_]+)/g;
-  const foundCids = [];
-  let match;
-  while ((match = cidRegex.exec(html)) !== null) {
-    if (!foundCids.includes(match[1])) {
-        foundCids.push(match[1]);
-    }
-  }
-
-  // REVERSE the order so we process the OLDEST found work first
-  // and the NEWEST work gets the highest ID.
-  foundCids.reverse();
-
-  console.log(`Found ${foundCids.length} unique CIDs on the page (reversed order for processing).`);
-
-  // CID が 1 件も見つからない場合はリージョンブロック等でページ内容が想定外。
+  // 作品が 1 件も返らないのは異常（API 側の障害・パラメータ不備など）。
   // 「新作なし」と区別できないため、黙って成功せずエラーで落とす。
-  if (foundCids.length === 0) {
-    console.error('No CIDs found on the list page. Likely region-blocked (non-JP IP) or page structure changed.');
+  if (items.length === 0) {
+    console.error('API returned no items. Check api_id / affiliate_id / maker id.');
     process.exit(1);
   }
 
+  // 3. 発売日の古い順に処理して、新しい作品ほど大きい ID を割り当てる
+  const sorted = [...items].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
   const newItems = [];
+  for (const item of sorted) {
+    const cid = item.content_id;
+    if (!cid || existingCids.has(cid)) continue;
 
-  for (const cid of foundCids) {
-    if (existingCids.has(cid)) continue;
-
-    console.log(`New work found: ${cid}`);
-
-    const url = `https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=${cid}/`;
-    
-    // Strategy: Find image URL directly using CID, which usually appears in the image path
-    // Example: https://doujin-assets.dmm.co.jp/digital/game/d_738043/d_738043pl.jpg
-    
-    // Regex to find image tag with CID in src
-    // We look for src containing the CID and 'pl' or 'pr' (package large/promo), and capture the whole src and alt
-    const imgRegex = new RegExp(`<img[^>]+src="([^"]*${cid}(?:pl|pr)\\.jpg)"[^>]*alt="([^"]+)"`, 'i');
-    const itemMatch = html.match(imgRegex);
-
-    let title = `New Work ${cid}`;
-    let imageUrl;
-    
-    if (itemMatch) {
-        imageUrl = itemMatch[1];
-        title = decodeHtmlEntities(itemMatch[2]);
-    } else {
-        // Try relaxed search: just find the image URL with CID
-        const simpleImgMatch = html.match(new RegExp(`src="([^"]*${cid}(?:pl|pr)\\.jpg)"`, 'i'));
-        if (simpleImgMatch) {
-            imageUrl = simpleImgMatch[1];
-            // Try to find title from link text if alt is missing or extraction failed
-            const linkTextMatch = html.match(new RegExp(`<a[^>]*${cid}[^>]*>([\\s\\S]*?)</a>`, 'i'));
-            if (linkTextMatch) {
-                 // Remove tags from link text
-                 title = decodeHtmlEntities(linkTextMatch[1].replace(/<[^>]+>/g, '').trim());
-            }
-        } else {
-            console.warn(`Could not find image for ${cid}, skipping.`);
-            continue;
-        }
+    const imageUrl = item.imageURL?.large || item.imageURL?.list || '';
+    if (!imageUrl) {
+      console.warn(`[${cid}] no image URL, skipped.`);
+      continue;
     }
-
-    // Convert 'pl.jpg' (package large) to 'pr.jpg' (promo) if that's the convention, 
-    // but 'pr' is often better for portfolios. Let's use what we found, or replace if 'pl'
-    // The existing json uses 'pr.jpg'.
-    if (imageUrl.includes('pl.jpg')) {
-        imageUrl = imageUrl.replace('pl.jpg', 'pr.jpg');
-    }
-
-    // Detect category from imageUrl
-    let category = 'その他';
-    if (imageUrl.includes('/game/')) category = 'ゲーム';
-    else if (imageUrl.includes('/cg/')) category = 'CG集';
-    else if (imageUrl.includes('/comic/')) category = 'コミック';
 
     maxId++;
+    const fanzaUrl = `https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=${cid}/`;
     const newItem = {
       id: maxId,
-      title: title.trim(),
-      description: "", 
-      imageUrl: imageUrl,
-      fanzaUrl: url,
-      affiliateUrl: generateAffiliateUrl(url),
-      category: category
+      title: item.title,
+      description: '', // 説明文は scripts/fetch_descriptions.mjs でローカル取得
+      imageUrl,
+      fanzaUrl,
+      affiliateUrl: generateAffiliateUrl(fanzaUrl),
+      category: detectCategory(imageUrl),
     };
-    
+
     newItems.push(newItem);
     works.push(newItem);
-    existingCids.add(cid); // Prevent duplicates in current run
+    existingCids.add(cid);
   }
 
   if (newItems.length > 0) {
     console.log(`Adding ${newItems.length} new works:`);
-    newItems.forEach(w => console.log(`- [${w.id}] ${w.title}`));
-    
+    newItems.forEach((w) => console.log(`- [${w.id}] ${w.title}`));
+
     await fs.writeFile(DATA_PATH, JSON.stringify(works, null, 2), 'utf-8');
     console.log('works.json updated.');
   } else {
@@ -168,7 +140,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
