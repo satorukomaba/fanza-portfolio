@@ -1,0 +1,3 @@
+# Cloudflare Pages: 静的ファイルを優先し、該当が無いパスのみ SPA として index.html を返す。
+# 事前生成した /works/:cid/index.html は実ファイルとして配信され、この規則より優先される。
+/*    /index.html   200
