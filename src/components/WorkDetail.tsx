@@ -1,70 +1,119 @@
-import { Box, Container, Heading, Text, Image, VStack, Badge, Button, HStack } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom'
-import works from '../data/works.json'
+import { Box, Container, Heading, Text, Image, VStack, Badge, Button } from '@chakra-ui/react';
+import { useParams, Link as RouterLink } from 'react-router-dom';
+import { SEO } from './SEO';
+import worksData from '../data/works.json';
+import type { Work } from '../types/work';
+import { getCategory, getCid, SITE_URL } from '../lib/works';
 
-function WorkDetail() {
-  const { id } = useParams()
-  const workId = id ? parseInt(id, 10) : undefined
-  const work = works.find(w => w.id === workId)
+const works = worksData as Work[];
+
+export default function WorkDetail() {
+  const { cid } = useParams();
+  const work = works.find((w) => getCid(w) === cid);
 
   if (!work) {
-    return <Text>作品が見つかりません。</Text>
+    return (
+      <Container maxW="container.md" py={20}>
+        <VStack spacing={6}>
+          <Heading size="lg" color="gray.700">
+            作品が見つかりません
+          </Heading>
+          <Button as={RouterLink} to="/" variant="pill">
+            トップに戻る
+          </Button>
+        </VStack>
+      </Container>
+    );
   }
 
-  // デバッグ用のログ出力
-  console.log('work:', work)
-  console.log('work.affiliateUrl:', work.affiliateUrl)
-  console.log('work.fanzaUrl:', work.fanzaUrl)
+  const linkUrl = work.affiliateUrl || work.fanzaUrl;
+  const isAffiliate = !!work.affiliateUrl;
+  const category = getCategory(work);
+  const pageUrl = `${SITE_URL}/works/${cid}`;
+  const description =
+    work.description || `${category}作品「${work.title}」。FANZA 同人サークル Korokke の作品ページ。`;
 
-  // アフィリエイトURLがある場合はそれを使用、なければ通常のFANZAURLを使用
-  const linkUrl = work.affiliateUrl || work.fanzaUrl
-  console.log('linkUrl:', linkUrl)
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: work.title,
+    image: work.imageUrl,
+    ...(work.description ? { description: work.description } : {}),
+    brand: { '@type': 'Brand', name: 'Korokke' },
+    category,
+    url: pageUrl,
+    offers: {
+      '@type': 'Offer',
+      url: linkUrl,
+      availability: 'https://schema.org/InStock',
+    },
+  };
 
   return (
-    <Container maxW="container.lg" py={12}>
-      <VStack spacing={8} align="stretch">
-        <Box bg="white" p={6} borderRadius="2xl" boxShadow="xl" position="relative" _hover={{ boxShadow: '2xl', transform: 'translateY(-2px)' }} transition="all 0.25s ease">
-          <a 
-            href={linkUrl} 
-            target="_blank" 
-            rel={work.affiliateUrl ? "sponsored" : "noopener noreferrer"}
-            style={{ textDecoration: 'none' }}
-          >
-            <Box 
-              position="relative" 
-              _hover={{ transform: 'scale(1.02) rotate(0.2deg)', transition: 'transform 0.25s ease' }}
-            >
+    <>
+      <SEO
+        title={`${work.title} | Korokke 同人ポートフォリオ`}
+        description={description}
+        url={pageUrl}
+        image={work.imageUrl}
+      />
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+
+      <Box minH="100vh" bg="gray.50">
+        <Container maxW="container.md" py={{ base: 8, md: 12 }}>
+          <Button as={RouterLink} to="/" variant="ghost" colorScheme="pink" size="sm" mb={6}>
+            ← 作品一覧へ
+          </Button>
+
+          <Box bg="white" p={{ base: 4, md: 6 }} borderRadius="2xl" boxShadow="xl">
+            <Box position="relative" mb={6}>
               <Image
                 src={work.imageUrl}
                 alt={work.title}
                 borderRadius="xl"
-                mb={6}
-                maxH="500px"
+                maxH="520px"
                 objectFit="contain"
                 mx="auto"
+                w="100%"
               />
-              {work.affiliateUrl && (
-                <Badge position="absolute" top={2} right={2} bgGradient="linear(to-r, brand.400, accent.400)" color="white" px={3} py={1} borderRadius="full" fontSize="xs" boxShadow="glow">FANZA</Badge>
-              )}
+              <Badge
+                position="absolute"
+                top={3}
+                left={3}
+                colorScheme="blackAlpha"
+                variant="solid"
+                borderRadius="full"
+                px={3}
+              >
+                {category}
+              </Badge>
             </Box>
-            <Heading size="xl" mb={4} color="brand.600" _hover={{ color: 'brand.700', textDecoration: 'underline' }} transition="color 0.2s ease-in-out">{work.title}</Heading>
-          </a>
-          <Text fontSize="lg" color="gray.700" mt={4}>{work.description}</Text>
-          <HStack mt={6} spacing={4}>
-            <Button as="a" href={linkUrl} target="_blank" variant="pill" size="md">作品ページへ</Button>
-            <Button as="a" href={work.fanzaUrl} target="_blank" colorScheme="accent" variant="solid" size="md">FANZAで見る</Button>
-          </HStack>
-          {/* デバッグ用表示 */}
-          <Text fontSize="sm" color="gray.500" mt={2}>
-            デバッグ: {work.affiliateUrl ? 'アフィリエイトURL使用' : 'FANZAURL使用'}
-          </Text>
-          <Text fontSize="xs" color="gray.400" wordBreak="break-all">
-            URL: {linkUrl}
-          </Text>
-        </Box>
-      </VStack>
-    </Container>
-  )
-}
 
-export default WorkDetail 
+            <Heading as="h1" size="lg" color="gray.800" mb={4}>
+              {work.title}
+            </Heading>
+
+            <Text fontSize="md" color="gray.700" lineHeight="tall" whiteSpace="pre-wrap">
+              {description}
+            </Text>
+
+            <Button
+              as="a"
+              href={linkUrl}
+              target="_blank"
+              rel={isAffiliate ? 'sponsored noopener' : 'noopener noreferrer'}
+              colorScheme="pink"
+              size="lg"
+              w="full"
+              mt={8}
+              shadow="md"
+              _hover={{ transform: 'translateY(-1px)', shadow: 'lg' }}
+            >
+              FANZA で見る
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    </>
+  );
+}
