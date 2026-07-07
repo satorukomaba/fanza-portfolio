@@ -37,9 +37,10 @@ describe('renderWorkHtml', () => {
     expect(html).toContain('property="og:url" content="https://koroke-works.pages.dev/works/d_776567"');
   });
 
-  it('Product 構造化データを埋め込む（offer は FANZA アフィ URL）', () => {
-    expect(html).toContain('"@type":"Product"');
-    expect(html).toContain('"url":"https://al.dmm.co.jp/?lurl=x&af_id=korokke-001"');
+  it('CreativeWork 構造化データを埋め込む（Product/Offer は使わない）', () => {
+    expect(html).toContain('"@type":"CreativeWork"');
+    expect(html).not.toContain('"@type":"Product"');
+    expect(html).not.toContain('"@type":"Offer"');
   });
 
   it('本文スニペットは露骨画像を含まず、テキストと FANZA リンクを持つ', () => {

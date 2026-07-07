@@ -47,16 +47,16 @@ export function renderWorkHtml(template, work, siteUrl = SITE_URL) {
     .replace(/<meta\s+name="twitter:[^"]*"[^>]*>/gi, '')
     .replace(/<link\s+rel="canonical"[^>]*>/gi, '');
 
+  // 販売者は FANZA 側なので価格前提の Product/Offer は使わず、実態に即した CreativeWork にする
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
+    '@type': 'CreativeWork',
     name: work.title,
     image: work.imageUrl,
     ...(work.description ? { description: work.description } : {}),
-    brand: { '@type': 'Brand', name: 'Korokke' },
-    category,
+    genre: category,
     url: pageUrl,
-    offers: { '@type': 'Offer', url: linkUrl, availability: 'https://schema.org/InStock' },
+    creator: { '@type': 'Organization', name: 'Korokke' },
   };
 
   const head =

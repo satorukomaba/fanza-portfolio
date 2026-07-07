@@ -65,14 +65,15 @@ describe('作品個別ページ /works/:cid', () => {
     expect(fanza.getAttribute('rel') ?? '').toContain('sponsored');
   });
 
-  it('Product 構造化データ (JSON-LD) を出力する', () => {
+  it('CreativeWork 構造化データ (JSON-LD) を出力する（価格前提の offers は持たない）', () => {
     renderAt('/works/d_776567');
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).not.toBeNull();
     const data = JSON.parse(script!.textContent ?? '{}');
-    expect(data['@type']).toBe('Product');
+    expect(data['@type']).toBe('CreativeWork');
     expect(data.name).toBe('転生したらHだった件3');
-    expect(data.offers?.url).toContain('al.dmm.co.jp');
+    expect(data.url).toContain('/works/d_776567');
+    expect(data.offers).toBeUndefined();
   });
 
   it('存在しない cid では「見つかりません」を表示する', () => {
