@@ -92,13 +92,18 @@ async function main() {
   const template = await fs.readFile(path.join(dist, 'index.html'), 'utf-8');
   const works = JSON.parse(await fs.readFile(path.join(cwd, 'src', 'data', 'works.json'), 'utf-8'));
 
+  const worksDir = path.join(dist, 'works');
+  await fs.mkdir(worksDir, { recursive: true });
+
   let n = 0;
   for (const w of works) {
     const cid = getCid(w.fanzaUrl);
     if (!cid) continue;
-    const dir = path.join(dist, 'works', cid);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, 'index.html'), renderWorkHtml(template, w, SITE_URL), 'utf-8');
+    // ディレクトリ+index.html にすると Cloudflare が /works/:cid を
+    // /works/:cid/ へ 308 リダイレクトし、sitemap・canonical（スラッシュ無し）と
+    // ズレて Google に「Redirect error」と判定される。拡張子付きファイルにすると
+    // クリーンURLで /works/:cid が 308 なしの 200 で配信される。
+    await fs.writeFile(path.join(worksDir, `${cid}.html`), renderWorkHtml(template, w, SITE_URL), 'utf-8');
     n++;
   }
   console.log(`Generated ${n} static work pages under dist/works/.`);
